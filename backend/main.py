@@ -448,38 +448,45 @@ Generate the exact JSON response adhering to the schema and financial constraint
         return blueprint
 
 
-# ── Serve Built Frontend SPA in Production & Docker Deployments ───────────────
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+# ── Serve Built Frontend SPA (Docker / Local only — skipped on Vercel Services) ─
+# On Vercel, the frontend is its own service served by Vite.
+# We only mount static files when NOT on Vercel and a built dist/ exists.
+if not os.environ.get("VERCEL"):
+    try:
+        from fastapi.staticfiles import StaticFiles
+        from fastapi.responses import FileResponse
 
-FRONTEND_DIST = os.path.abspath(os.path.join(CURRENT_DIR, "..", "frontend", "dist"))
-if not os.path.exists(FRONTEND_DIST):
-    FRONTEND_DIST = os.path.abspath(os.path.join(CURRENT_DIR, "static"))
+        FRONTEND_DIST = os.path.abspath(os.path.join(CURRENT_DIR, "..", "frontend", "dist"))
+        if not os.path.exists(FRONTEND_DIST):
+            FRONTEND_DIST = os.path.abspath(os.path.join(CURRENT_DIR, "static"))
 
-if os.path.exists(FRONTEND_DIST):
-    assets_dir = os.path.join(FRONTEND_DIST, "assets")
-    if os.path.exists(assets_dir):
-        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+        if os.path.exists(FRONTEND_DIST):
+            assets_dir = os.path.join(FRONTEND_DIST, "assets")
+            if os.path.exists(assets_dir):
+                app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
 
-    @app.get("/")
-    async def serve_root():
-        index_file = os.path.join(FRONTEND_DIST, "index.html")
-        if os.path.isfile(index_file):
-            return FileResponse(index_file)
-        raise HTTPException(status_code=404, detail="Frontend index.html not found")
+            @app.get("/")
+            async def serve_root():
+                index_file = os.path.join(FRONTEND_DIST, "index.html")
+                if os.path.isfile(index_file):
+                    return FileResponse(index_file)
+                raise HTTPException(status_code=404, detail="Frontend index.html not found")
 
-    @app.get("/{full_path:path}")
-    async def serve_spa(full_path: str):
-        # Allow API routes, docs, and health checks to pass through
-        if full_path.startswith("api/") or full_path in ("health", "docs", "redoc", "openapi.json"):
-            raise HTTPException(status_code=404, detail="Not Found")
-        file_path = os.path.join(FRONTEND_DIST, full_path)
-        if full_path and os.path.isfile(file_path):
-            return FileResponse(file_path)
-        index_file = os.path.join(FRONTEND_DIST, "index.html")
-        if os.path.isfile(index_file):
-            return FileResponse(index_file)
-        raise HTTPException(status_code=404, detail="Frontend index.html not found")
+            @app.get("/{full_path:path}")
+            async def serve_spa(full_path: str):
+                # Allow API routes, docs, and health checks to pass through
+                if full_path.startswith("api/") or full_path in ("health", "docs", "redoc", "openapi.json"):
+                    raise HTTPException(status_code=404, detail="Not Found")
+                file_path = os.path.join(FRONTEND_DIST, full_path)
+                if full_path and os.path.isfile(file_path):
+                    return FileResponse(file_path)
+                index_file = os.path.join(FRONTEND_DIST, "index.html")
+                if os.path.isfile(index_file):
+                    return FileResponse(index_file)
+                raise HTTPException(status_code=404, detail="Frontend index.html not found")
+
+    except Exception as e:
+        logger.warning(f"Could not mount frontend static files: {e}")
 
 
 if __name__ == "__main__":
