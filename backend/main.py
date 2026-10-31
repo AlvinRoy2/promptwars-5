@@ -57,7 +57,7 @@ async def add_security_headers(request: Request, call_next):
     response.headers["X-XSS-Protection"] = "1; mode=block"
     return response
 
-# 2. Configurable CORS with environment override
+# 2. Configurable CORS with environment override and Vercel preview domain support
 allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "")
 if allowed_origins_env:
     allowed_origins = [o.strip() for o in allowed_origins_env.split(",") if o.strip()]
@@ -73,6 +73,7 @@ else:
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins if allowed_origins != ["*"] else ["*"],
+    allow_origin_regex=r"^https://.*\.vercel\.app$",
     allow_credentials=True if allowed_origins != ["*"] else False,
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
@@ -356,6 +357,7 @@ def generate_curated_fallback(req: EventRequest) -> EventBlueprintResponse:
 
 
 @app.get("/health")
+@app.get("/api/health")
 def health():
     return {
         "status": "healthy",

@@ -337,10 +337,10 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('financial');
   const [isLoading, setIsLoading] = useState(false);
   const [backendOnline, setBackendOnline] = useState(false);
-  const [backendUrl] = useState(
-    import.meta.env.VITE_API_URL ||
-    (typeof window !== 'undefined' && window.location.port !== '5173' ? window.location.origin : 'http://localhost:8000')
-  );
+  // In development: Vite proxy forwards /api/* to localhost:8000
+  // In production (Vercel): /api/* is routed to the serverless function
+  // VITE_API_URL can override for custom deployments
+  const [backendUrl] = useState(import.meta.env.VITE_API_URL || '');
   const [copiedHex, setCopiedHex] = useState(null);
 
   const heroRef = useRef(null);
@@ -354,14 +354,21 @@ export default function App() {
   });
   const heroImgY = useTransform(scrollYProgress, [0, 1], ['0%', '18%']);
 
-  // Check backend health
+  // Check backend health (supports both /api/health and /health under Vercel rewrites)
   useEffect(() => {
-    fetch(`${backendUrl}/health`)
+    fetch(`${backendUrl}/api/health`)
       .then(r => r.json())
       .then(d => {
         if (d.status === 'healthy') setBackendOnline(true);
       })
-      .catch(() => setBackendOnline(false));
+      .catch(() => {
+        fetch(`${backendUrl}/health`)
+          .then(r => r.json())
+          .then(d => {
+            if (d.status === 'healthy') setBackendOnline(true);
+          })
+          .catch(() => setBackendOnline(false));
+      });
   }, [backendUrl]);
 
   // Derived financial computations

@@ -14,13 +14,14 @@ def client():
 
 
 def test_health_check_endpoint(client):
-    """Verify /health status, service metadata, and model identifier."""
-    response = client.get("/health")
-    assert response.status_code == 200
-    data = response.json()
-    assert data["status"] == "healthy"
-    assert "service" in data
-    assert "llama" in data["model"]
+    """Verify /health and /api/health status, service metadata, and model identifier."""
+    for path in ["/health", "/api/health"]:
+        response = client.get(path)
+        assert response.status_code == 200
+        data = response.json()
+        assert data["status"] == "healthy"
+        assert "service" in data
+        assert "llama" in data["model"]
 
 
 def test_root_spa_serving(client):
