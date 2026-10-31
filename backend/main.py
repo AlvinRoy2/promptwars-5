@@ -109,7 +109,7 @@ def get_cached_blueprint(cache_key: str) -> Optional[EventBlueprintResponse]:
 
 def set_cached_blueprint(cache_key: str, blueprint: EventBlueprintResponse):
     # Enforce maximum cache capacity to prevent memory creep
-    if len(_blueprint_cache) > 200:
+    if len(_blueprint_cache) >= 200 and cache_key not in _blueprint_cache:
         oldest_key = min(_blueprint_cache.keys(), key=lambda k: _blueprint_cache[k][1])
         del _blueprint_cache[oldest_key]
     _blueprint_cache[cache_key] = (blueprint, time.time())

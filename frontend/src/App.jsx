@@ -354,21 +354,12 @@ export default function App() {
   });
   const heroImgY = useTransform(scrollYProgress, [0, 1], ['0%', '18%']);
 
-  // Check backend health (supports both /api/health and /health under Vercel rewrites)
+  // Check backend health via the canonical /api/health route (Vercel rewrite -> backend service)
   useEffect(() => {
     fetch(`${backendUrl}/api/health`)
       .then(r => r.json())
-      .then(d => {
-        if (d.status === 'healthy') setBackendOnline(true);
-      })
-      .catch(() => {
-        fetch(`${backendUrl}/health`)
-          .then(r => r.json())
-          .then(d => {
-            if (d.status === 'healthy') setBackendOnline(true);
-          })
-          .catch(() => setBackendOnline(false));
-      });
+      .then(d => { if (d.status === 'healthy') setBackendOnline(true); })
+      .catch(() => setBackendOnline(false));
   }, [backendUrl]);
 
   // Derived financial computations
@@ -679,7 +670,7 @@ export default function App() {
             <button
               onClick={() => handleSceneSelect((activeSceneIndex + 1) % SCENES.length)}
               className="concepts-arrow-btn"
-              title="Next Concept"
+              aria-label="Next concept"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -691,7 +682,12 @@ export default function App() {
               return (
                 <div
                   key={scene.id}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Select concept: ${scene.title}`}
+                  aria-pressed={isSelected}
                   onClick={() => handleSceneSelect(idx)}
+                  onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleSceneSelect(idx)}
                   className={`concept-tile ${isSelected ? 'active' : ''}`}
                 >
                   <div className="concept-tile-img-wrap">
@@ -753,10 +749,11 @@ export default function App() {
                 {/* Row 1: Type & Location */}
                 <div className="form-row form-row-2">
                   <div className="form-field">
-                    <label className="field-label">Event Type</label>
+                    <label htmlFor="field-event-type" className="field-label">Event Type</label>
                     <div className="field-wrap">
                       <Sparkles className="field-icon" />
                       <input
+                        id="field-event-type"
                         type="text"
                         required
                         value={formData.event_type}
@@ -767,10 +764,11 @@ export default function App() {
                     </div>
                   </div>
                   <div className="form-field">
-                    <label className="field-label">Location &amp; Venue Space</label>
+                    <label htmlFor="field-location" className="field-label">Location &amp; Venue Space</label>
                     <div className="field-wrap">
                       <MapPin className="field-icon" />
                       <input
+                        id="field-location"
                         type="text"
                         required
                         value={formData.location}
@@ -785,10 +783,11 @@ export default function App() {
                 {/* Row 2: Guests, Currency, Budget, Horizon */}
                 <div className="form-row form-row-4">
                   <div className="form-field">
-                    <label className="field-label">Guest Count</label>
+                    <label htmlFor="field-guest-count" className="field-label">Guest Count</label>
                     <div className="field-wrap">
                       <Users className="field-icon" />
                       <input
+                        id="field-guest-count"
                         type="number"
                         min="1"
                         required
@@ -800,10 +799,11 @@ export default function App() {
                   </div>
 
                   <div className="form-field">
-                    <label className="field-label">Total Budget ({curr})</label>
+                    <label htmlFor="field-total-budget" className="field-label">Total Budget ({curr})</label>
                     <div className="field-wrap">
                       <DollarSign className="field-icon" />
                       <input
+                        id="field-total-budget"
                         type="number"
                         min="500"
                         step="500"
@@ -816,10 +816,11 @@ export default function App() {
                   </div>
 
                   <div className="form-field">
-                    <label className="field-label">Horizon (Weeks)</label>
+                    <label htmlFor="field-weeks" className="field-label">Horizon (Weeks)</label>
                     <div className="field-wrap">
                       <Clock className="field-icon" />
                       <input
+                        id="field-weeks"
                         type="number"
                         min="1"
                         max="104"
@@ -832,8 +833,9 @@ export default function App() {
                   </div>
 
                   <div className="form-field">
-                    <label className="field-label">Currency</label>
+                    <label htmlFor="field-currency" className="field-label">Currency</label>
                     <select
+                      id="field-currency"
                       value={formData.currency}
                       onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
                       className="field t-mono"
@@ -848,8 +850,9 @@ export default function App() {
                 {/* Row 3: Sensory Vibe & Constraints */}
                 <div className="form-row form-row-2eq">
                   <div className="form-field">
-                    <label className="field-label">Sensory Atmosphere &amp; Theme</label>
+                    <label htmlFor="field-sensory-theme" className="field-label">Sensory Atmosphere &amp; Theme</label>
                     <textarea
+                      id="field-sensory-theme"
                       rows="3"
                       required
                       value={formData.sensory_theme}
@@ -859,8 +862,9 @@ export default function App() {
                     />
                   </div>
                   <div className="form-field">
-                    <label className="field-label">Operational Constraints &amp; Directives</label>
+                    <label htmlFor="field-constraints" className="field-label">Operational Constraints &amp; Directives</label>
                     <textarea
+                      id="field-constraints"
                       rows="3"
                       value={formData.operational_constraints}
                       onChange={(e) => setFormData({ ...formData, operational_constraints: e.target.value })}
