@@ -2,8 +2,11 @@
 Integration and End-to-End API Route Tests using FastAPI TestClient.
 """
 
+import os
+
 import pytest
 from fastapi.testclient import TestClient
+
 from backend.main import app
 
 
@@ -24,8 +27,12 @@ def test_health_check_endpoint(client):
         assert "llama" in data["model"]
 
 
+@pytest.mark.skipif(
+    bool(os.environ.get("VERCEL")),
+    reason="Static SPA serving is disabled on Vercel Services (frontend is its own service).",
+)
 def test_root_spa_serving(client):
-    """Verify that GET / correctly serves the compiled frontend SPA."""
+    """Verify that GET / correctly serves the compiled frontend SPA (local/Docker only)."""
     response = client.get("/")
     assert response.status_code == 200
     assert "<!doctype html>" in response.text.lower() or "<html" in response.text.lower()
@@ -41,7 +48,7 @@ def test_synthesize_blueprint_happy_path(client):
         "total_budget": 24000.0,
         "weeks_to_event": 16,
         "sensory_theme": "Industrial Loft, Neo-Tokyo, Modular Synth",
-        "operational_constraints": "Curfew at 1 AM."
+        "operational_constraints": "Curfew at 1 AM.",
     }
     response = client.post("/api/blueprint", json=payload)
     assert response.status_code == 200
@@ -73,7 +80,7 @@ def test_synthesize_blueprint_caching(client):
         "total_budget": 60000.0,
         "weeks_to_event": 20,
         "sensory_theme": "Zero-waste botanical biophilia",
-        "operational_constraints": None
+        "operational_constraints": None,
     }
     # First request
     resp1 = client.post("/api/blueprint", json=payload)
@@ -89,7 +96,7 @@ def test_synthesize_blueprint_validation_error(client):
     """Verify that invalid payloads (e.g. negative budget or missing required fields) return 422."""
     bad_payload = {
         "event_type": "Party",
-        "total_budget": -100.0  # Invalid
+        "total_budget": -100.0,  # Invalid
     }
     response = client.post("/api/blueprint", json=bad_payload)
     assert response.status_code == 422
@@ -105,7 +112,7 @@ def test_legacy_alias_endpoint(client):
         "total_budget": 5000.0,
         "weeks_to_event": 6,
         "sensory_theme": "Candlelight & Natural Wine",
-        "operational_constraints": "Vegan only"
+        "operational_constraints": "Vegan only",
     }
     response = client.post("/api/plan/all", json=payload)
     assert response.status_code == 200

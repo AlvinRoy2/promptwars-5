@@ -4,42 +4,41 @@ Relying strictly on native LLM SDKs (Groq / Native OpenAI format) with zero Lang
 Enforces Pydantic v2 structured schemas and mathematical verification.
 """
 
-import os
-import sys
+# -- Standard Library ----------------------------------------------------------
+import hashlib
 import json
 import logging
-from datetime import datetime
+import os
+import sys
+import time
+from collections import defaultdict
 from typing import Optional
 
-# Ensure backend directory is in sys.path
+# -- Third-party ---------------------------------------------------------------
+from dotenv import load_dotenv
+from fastapi import FastAPI, HTTPException, Request, status
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import ValidationError
+
+# -- Local ---------------------------------------------------------------------
+# Ensure backend directory is on sys.path for direct-run and pytest invocations
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 if CURRENT_DIR not in sys.path:
     sys.path.insert(0, CURRENT_DIR)
 
-from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, status
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import ValidationError
-
-load_dotenv()
-logger = logging.getLogger("EventStudioBackend")
-logging.basicConfig(level=logging.INFO)
-
-from schemas import (
-    EventRequest,
-    EventBlueprintResponse,
-    FinancialBlueprint,
+from schemas import (  # noqa: E402
     BudgetItem,
+    EventBlueprintResponse,
+    EventRequest,
+    FinancialBlueprint,
+    SensoryBlueprint,
     TimelinePhase,
     VendorContractSpec,
-    SensoryBlueprint,
 )
 
-# Security & Performance Middleware Setup
-from fastapi import Request
-from collections import defaultdict
-import time
-import hashlib
+load_dotenv()
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("EventStudioBackend")
 
 app = FastAPI(
     title="Event Architecture & Production Studio API",

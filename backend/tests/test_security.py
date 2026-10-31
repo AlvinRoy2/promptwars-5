@@ -4,6 +4,7 @@ Security, Middleware & Rate Limiting Tests.
 
 import pytest
 from fastapi.testclient import TestClient
+
 from backend.main import app, _request_timestamps
 
 
@@ -20,6 +21,7 @@ def test_owasp_security_headers(client):
     assert response.headers.get("x-content-type-options") == "nosniff"
     assert response.headers.get("x-frame-options") == "DENY"
     assert response.headers.get("referrer-policy") == "strict-origin-when-cross-origin"
+    assert response.headers.get("x-xss-protection") == "1; mode=block"
 
 
 def test_cors_preflight(client):
@@ -43,8 +45,8 @@ def test_rate_limiter_protection(client):
         "currency": "USD",
         "total_budget": 10000.0,
         "weeks_to_event": 10,
-        "sensory_theme": "Picnic",
-        "operational_constraints": None
+        "sensory_theme": "Simple outdoor picnic aesthetic",
+        "operational_constraints": None,
     }
 
     # Clear history for clean test run
