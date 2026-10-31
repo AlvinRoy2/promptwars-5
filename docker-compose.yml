@@ -1,0 +1,20 @@
+services:
+  event-studio:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: promptwars-event-studio:latest
+    container_name: promptwars_event_studio
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
+      - GROQ_MODEL=${GROQ_MODEL:-llama-3.3-70b-versatile}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
