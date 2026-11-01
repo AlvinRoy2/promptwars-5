@@ -54,3 +54,4 @@ export function ConceptsRail({ conceptsRef, activeSceneIndex, handleSceneSelect 
     </section>
   );
 }
+

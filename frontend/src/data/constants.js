@@ -154,3 +154,4 @@ export const ARCHETYPES = {
     operational_constraints: 'City sound permit curfew at 22:00. Requires wheelchair accessible shuttle runs from civic transit hub.'
   }
 };
+

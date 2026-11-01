@@ -87,3 +87,4 @@ export function SensoryTab({ blueprint, copyToClipboard, copiedHex }) {
     </motion.div>
   );
 }
+

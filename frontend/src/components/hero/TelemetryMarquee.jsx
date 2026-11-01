@@ -19,3 +19,4 @@ export function TelemetryMarquee() {
     </section>
   );
 }
+

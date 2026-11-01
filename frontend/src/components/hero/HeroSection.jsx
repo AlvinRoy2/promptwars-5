@@ -159,3 +159,4 @@ export function HeroSection({ heroRef, heroImgY, activeScene, scrollToSection })
     </section>
   );
 }
+

@@ -82,3 +82,4 @@ export function FinancialTab({ blueprint, curr }) {
     </motion.div>
   );
 }
+

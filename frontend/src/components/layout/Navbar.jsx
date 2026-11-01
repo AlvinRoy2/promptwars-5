@@ -60,3 +60,4 @@ export function Navbar({ scrollToSection, backendOnline, blueprint, activeTab, s
     </header>
   );
 }
+

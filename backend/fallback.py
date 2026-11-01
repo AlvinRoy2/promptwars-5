@@ -197,3 +197,4 @@ def generate_curated_fallback(req: EventRequest) -> EventBlueprintResponse:
             ),
         ],
     )
+
